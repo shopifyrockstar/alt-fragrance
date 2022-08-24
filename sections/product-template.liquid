@@ -1,0 +1,190 @@
+{%- liquid
+  assign isModal = false
+  if template == 'product.modal'
+    assign isModal = true
+  endif
+
+  assign isAjax = false
+  if template == 'product.ajax'
+    assign isAjax = true
+  endif
+-%}
+
+{%- render 'product-template',
+  product: product,
+  description_style: section.settings.description_style,
+  image_position: section.settings.image_position,
+  image_container_width: section.settings.image_container_size,
+  image_size: section.settings.product_image_size,
+  section_id: product.id,
+  social: section.settings.social_enable,
+  isModal: isModal,
+  isAjax: isAjax,
+  thumbnail_position: section.settings.thumbnail_position,
+  thumbnail_arrows: section.settings.thumbnail_arrows,
+  mobile_layout: section.settings.mobile_layout,
+  video_looping: section.settings.enable_video_looping,
+  video_style: section.settings.product_video_style
+-%}
+
+{% schema %}
+  {
+    "name": "Product pages",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Media"
+      },
+      {
+        "type": "paragraph",
+        "content": "Learn more about [media types](https://help.shopify.com/en/manual/products/product-media)"
+      },
+      {
+        "type": "select",
+        "id": "image_position",
+        "label": "Position",
+        "default": "left",
+        "options": [
+          {
+            "value": "left",
+            "label": "Left"
+          },
+          {
+            "value": "right",
+            "label": "Right"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "image_container_size",
+        "label": "Size",
+        "default": "medium",
+        "options": [
+          {
+            "value": "small",
+            "label": "Small"
+          },
+          {
+            "value": "medium",
+            "label": "Medium"
+          },
+          {
+            "value": "large",
+            "label": "Large"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "product_image_size",
+        "label": "Force image size",
+        "default": "square",
+        "options": [
+          {
+            "value": "natural",
+            "label": "Natural"
+          },
+          {
+            "value": "square",
+            "label": "Square (1:1)"
+          },
+          {
+            "value": "landscape",
+            "label": "Landscape (4:3)"
+          },
+          {
+            "value": "portrait",
+            "label": "Portrait (2:3)"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "thumbnail_position",
+        "label": "Thumbnail position",
+        "default": "beside",
+        "options": [
+          {
+            "value": "beside",
+            "label": "Next to media"
+          },
+          {
+            "value": "below",
+            "label": "Below media"
+          }
+        ]
+      },
+      {
+        "type": "checkbox",
+        "id": "thumbnail_arrows",
+        "label": "Show thumbnail arrows"
+      },
+      {
+        "type": "select",
+        "id": "mobile_layout",
+        "label": "Mobile layout",
+        "default": "partial",
+        "options": [
+          {
+            "value": "partial",
+            "label": "75% width"
+          },
+          {
+            "value": "full",
+            "label": "Full width"
+          }
+        ]
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_video_looping",
+        "label": "Enable video looping",
+        "default": true
+      },
+      {
+        "type": "select",
+        "id": "product_video_style",
+        "label": "Video style",
+        "default": "muted",
+        "options": [
+          {
+            "value": "muted",
+            "label": "Video without sound"
+          },
+          {
+            "value": "unmuted",
+            "label": "Video with sound"
+          }
+        ],
+        "info": "Video with sound will not autoplay"
+      },
+      {
+        "type": "header",
+        "content": "Other"
+      },
+      {
+        "type": "select",
+        "id": "description_style",
+        "label": "Description style",
+        "default": "expandable",
+        "options": [
+          {
+            "value": "expandable",
+            "label": "Expandable"
+          },
+          {
+            "value": "visible",
+            "label": "Always visible"
+          }
+        ]
+      },
+      {
+        "type": "checkbox",
+        "id": "social_enable",
+        "label": "Show social sharing icons",
+        "default": true
+      }
+    ]
+  }
+{% endschema %}

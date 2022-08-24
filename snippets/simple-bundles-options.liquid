@@ -1,0 +1,15 @@
+<div id="{{ div_id }}">
+  {% for variant_option in variant.metafields.simple_bundles.variant_options.value %}
+    {% assign option_name_param = variant_option.optionName | downcase | replace: " ", "-" | strip %}
+    <label for="{{ option_name_param }}">{{ variant_option.optionName }}</label>
+    <select id="{{ option_name_param }}" name="properties[{{ variant_option.optionName }}]" required>
+      {% assign option_values = variant_option.optionValues | split: "," %}
+      {% assign option_inventories = variant_option.optionInventories | split: "," %}
+      {% for option_value in option_values %}
+        {% assign value = option_value | strip %}
+        {% assign option_inventory = option_inventories[forloop.index0] | plus: 0 %}
+        <option value="{{ value }}" data-inventory="{{ option_inventory }}" {% if option_inventory < 1 %}disabled{% endif %}>{{ value }}</option>
+      {% endfor %}
+    </select>
+  {% endfor %}
+</div>

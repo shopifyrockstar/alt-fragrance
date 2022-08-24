@@ -1,0 +1,17 @@
+<div class="page-width" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+  <button type="button"
+    class="label collapsible-trigger collapsible-trigger-btn collapsible-trigger-btn--borders collapsible--auto-height"
+    aria-controls="FAQ-content-{{ block.id }}">
+    <span class="collapsible-trigger__layout">
+      <span>
+        <span itemprop="name">{{ block.settings.title }}</span>
+      </span>
+      {%- render 'collapsible-icons' -%}
+    </span>
+  </button>
+  <div id="FAQ-content-{{ block.id }}" class="collapsible-content collapsible-content--all" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+    <div class="collapsible-content__inner rte" itemprop="text">
+      {{ block.settings.text }}
+    </div>
+  </div>
+</div>

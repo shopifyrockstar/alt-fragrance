@@ -1,0 +1,13 @@
+{
+  "sections": {
+    "pf-e0021928": {
+      "type": "pf-e0021928",
+      "settings": {
+      }
+    }
+  },
+  "order": [
+    "pf-e0021928"
+  ],
+  "layout": "theme.pagefly"
+}

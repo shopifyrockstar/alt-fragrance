@@ -1,0 +1,322 @@
+{%- liquid
+  assign product = all_products[section.settings.featured_product]
+  assign current_variant = product.selected_or_first_available_variant
+-%}
+
+{%- if section.settings.divider -%}<div class="section--divider">{%- endif -%}
+
+<div id="ProductSection-{{ section.id }}"
+  data-section-id="{{ section.id }}"
+  data-section-type="product"
+  {% if settings.product_zoom_enable %}
+    data-image-zoom="true"
+  {% endif %}
+  {% if settings.inventory_enable %}
+    data-inventory="true"
+  {% endif %}
+  {% if settings.inventory_transfers_enable %}
+    data-incoming-inventory="true"
+  {% endif %}>
+
+  {%- render 'product-template-variables', product: product, current_variant: current_variant -%}
+
+  {%- capture product_header -%}
+    <p class="h2 product-single__title">
+      {%- unless product.empty? -%}
+        {{ product.title }}
+      {%- else -%}
+        {{ 'home_page.onboarding.product_title' | t }}
+      {%- endunless -%}
+    </p>
+
+    {%- if settings.enable_product_reviews -%}
+      {%- assign review_link = product.url | within: collection | append: '#Reviews-' | append: product.id -%}
+      <a href="{{ review_link }}" class="product-single__review-link" aria-label="Reviews">
+        <span class="shopify-product-reviews-badge" data-id="{{ product.id }}"></span>
+      </a>
+    {%- endif -%}
+
+    {%- if settings.vendor_enable or settings.sku_enable -%}
+      <div class="product-single__vendor-sku">
+        {%- if settings.vendor_enable -%}
+          <span class="product-single__vendor">
+            {%- assign vendor_handle = product.vendor | handleize -%}
+            {%- if collections[vendor_handle] != empty -%}
+              <a href="{{ routes.collections_url }}/{{ collections[vendor_handle].handle }}">
+                {{ collections[vendor_handle].title }}
+              </a>
+            {%- else -%}
+              {%- unless product.empty? -%}
+                {{ product.vendor | link_to_vendor }}
+              {%- else -%}
+                Vendor
+              {%- endunless -%}
+            {%- endif -%}
+          </span>
+        {%- endif -%}
+
+        {%- if settings.sku_enable -%}
+          <span data-sku id="Sku-{{ section.id }}" class="product-single__sku{% if current_variant.sku == blank %} hide{% endif %}">
+            SKU: <span data-sku-id>{{ current_variant.sku }}</span>
+          </span>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+  {%- endcapture -%}
+
+  <div class="page-width">
+    <div class="product-single__header--mobile medium-up--hide">
+      {{ product_header }}
+    </div>
+
+    <div class="product-grid__container grid">
+      <div class="grid__item medium-up--one-half product-single__sticky">
+        {%- render 'product-images',
+          section_id: section.id,
+          product: product,
+          isModal: false,
+          image_position: 'left',
+          image_size: section.settings.product_image_size,
+          product_zoom_size: '1800x1800',
+          thumbnail_arrows: section.settings.thumbnail_arrows,
+          mobile_layout: section.settings.mobile_layout,
+          thumbnail_position: section.settings.thumbnail_position,
+          video_looping: section.settings.enable_video_looping,
+          video_style: section.settings.product_video_style
+        -%}
+      </div>
+
+      <div class="product-grid__content product-single__sticky grid__item medium-up--one-half">
+        <div class="product-single__meta">
+          <div class="product-single__header small--hide">
+            {{ product_header }}
+          </div>
+
+          {%- if settings.inventory_enable or settings.inventory_transfers_enable -%}
+            {%- assign variants_with_inventory_tracking = product.variants | where: 'inventory_management', 'shopify' -%}
+
+            <script>
+              // Store inventory quantities in JS because they're no longer
+              // available directly in JS when a variant changes.
+              // Have an object that holds all potential products so it works
+              // with quick view or with multiple featured products.
+              window.inventories = window.inventories || {};
+              window.inventories['{{ section.id }}'] = {};
+               {% for variant in variants_with_inventory_tracking %}
+                window.inventories['{{ section.id }}'][{{ variant.id }}] = {
+                  'quantity': {{ variant.inventory_quantity | default: 0 }},
+                  'incoming': '{{ variant.incoming | default: false }}',
+                  'next_incoming_date': {{ variant.next_incoming_date | date: format: 'date' | json }}
+                };
+               {% endfor %}
+            </script>
+          {%- endif -%}
+
+          {%- unless product.empty? -%}
+            {%- render 'product-form',
+              section_id: section.id,
+              product: product,
+              current_variant: current_variant
+            -%}
+          {%- else -%}
+            <div class="product-single__form-price">
+              <span id="ProductPrice-{{ section.id }}"
+                class="product__price">
+                {%- render 'price' with 1999 -%}
+              </span>
+            </div>
+
+            {% if settings.sales_point_1 != blank or settings.sales_point_2 != blank or settings.sales_point_3 != blank or settings.sales_point_4 != blank %}
+              <ul class="sales_points">
+                {% if settings.sales_point_1 != blank %}
+                  <li class="sales_point">
+                    <span class="icon-and-text">
+                      {% case settings.sales_point_1_icon %}
+                        {% when 'checkmark' %} <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-circle-checkmark" viewBox="0 0 64 64"><defs><style>.cls-1{fill:none;stroke:#000;stroke-width:2px}</style></defs><path class="cls-1" d="M52.68 24.48A22 22 0 1 1 47 15.93M21 32l8.5 8.5L57 13"/></svg>
+                        {% when 'globe' %} <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-globe" viewBox="0 0 64 64"><defs><style>.cls-1{fill:none;stroke:#000;stroke-width:2px}</style></defs><circle class="cls-1" cx="33" cy="32" r="22"/><path class="cls-1" d="M14 21h38M11 32h44M14 43h38M33 10c-12 8-12 37 0 44M33 10c12 8 12 37 0 44"/></svg>
+                        {% when 'leaf' %} <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-leaf" viewBox="0 0 64 64"><defs><style>.cls-1{fill:none;stroke:#000;stroke-miterlimit:10;stroke-width:2px}</style></defs><path class="cls-1" d="M51 12L13 50M35 13v15h16"/><path class="cls-1" d="M52 11c6 24-16.72 47.29-33 32C7 22 29 10 52 11z"/></svg>
+                        {% when 'package' %} <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-package" viewBox="0 0 64 64"><defs><style>.cls-1{fill:none;stroke:#000;stroke-width:2px}</style></defs><path class="cls-1" d="M32 56L9.05 42.88V22.12L32 9l22.95 13.12v20.76L32 56z"/><path class="cls-1" d="M32 56V35.23l22.95-13.11M32 35.23L9.05 22.12M42.13 14.79L20.52 28.67v8.75"/></svg>
+                        {% when 'lock' %} <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-lock" viewBox="0 0 64 64"><defs><style>.cls-1{fill:none;stroke:#000;stroke-width:2px}</style></defs><path id="svg_2" data-name="svg 2" class="cls-1" d="M20.48 24v-3c0-6.6 5.52-11 11.76-11C39 10 44 15.13 44 21v3"/><path id="svg_4" data-name="svg 4" class="cls-1" d="M11.62 24h41.25v29.77H11.62z"/><path class="cls-1" d="M32.24 37v7"/><circle class="cls-1" cx="32.24" cy="35.5" r="1.5"/></svg>
+                        {% when 'truck' %} <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-truck" viewBox="0 0 64 64"><defs><style>.cls-1{fill:none;stroke:#000;stroke-miterlimit:10;stroke-width:2px}</style></defs><path class="cls-1" d="M17 47.72H7.38V21h33.14v26.72H24.44M45.92 47.72h-5.4V34.9h17.1v12.82h-4.23M57.62 34.9l-6.41-8.56H40.52"/><circle class="cls-1" cx="20.74" cy="48.26" r="3.74"/><path class="cls-1" d="M45.92 47.73a3.82 3.82 0 1 1 0 .37v-.37"/></svg>
+                      {% endcase %}
+                      <span>{{ settings.sales_point_1 }}</span>
+                    </span>
+                  </li>
+                {% endif %}
+                {% if settings.sales_point_2 != blank %}
+                  <li class="sales_point">
+                    <span class="icon-and-text">
+                      {% case settings.sales_point_2_icon %}
+                        {% when 'checkmark' %} <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-circle-checkmark" viewBox="0 0 64 64"><defs><style>.cls-1{fill:none;stroke:#000;stroke-width:2px}</style></defs><path class="cls-1" d="M52.68 24.48A22 22 0 1 1 47 15.93M21 32l8.5 8.5L57 13"/></svg>
+                        {% when 'globe' %} <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-globe" viewBox="0 0 64 64"><defs><style>.cls-1{fill:none;stroke:#000;stroke-width:2px}</style></defs><circle class="cls-1" cx="33" cy="32" r="22"/><path class="cls-1" d="M14 21h38M11 32h44M14 43h38M33 10c-12 8-12 37 0 44M33 10c12 8 12 37 0 44"/></svg>
+                        {% when 'leaf' %} <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-leaf" viewBox="0 0 64 64"><defs><style>.cls-1{fill:none;stroke:#000;stroke-miterlimit:10;stroke-width:2px}</style></defs><path class="cls-1" d="M51 12L13 50M35 13v15h16"/><path class="cls-1" d="M52 11c6 24-16.72 47.29-33 32C7 22 29 10 52 11z"/></svg>
+                        {% when 'package' %} <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-package" viewBox="0 0 64 64"><defs><style>.cls-1{fill:none;stroke:#000;stroke-width:2px}</style></defs><path class="cls-1" d="M32 56L9.05 42.88V22.12L32 9l22.95 13.12v20.76L32 56z"/><path class="cls-1" d="M32 56V35.23l22.95-13.11M32 35.23L9.05 22.12M42.13 14.79L20.52 28.67v8.75"/></svg>
+                        {% when 'lock' %} <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-lock" viewBox="0 0 64 64"><defs><style>.cls-1{fill:none;stroke:#000;stroke-width:2px}</style></defs><path id="svg_2" data-name="svg 2" class="cls-1" d="M20.48 24v-3c0-6.6 5.52-11 11.76-11C39 10 44 15.13 44 21v3"/><path id="svg_4" data-name="svg 4" class="cls-1" d="M11.62 24h41.25v29.77H11.62z"/><path class="cls-1" d="M32.24 37v7"/><circle class="cls-1" cx="32.24" cy="35.5" r="1.5"/></svg>
+                        {% when 'truck' %} <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-truck" viewBox="0 0 64 64"><defs><style>.cls-1{fill:none;stroke:#000;stroke-miterlimit:10;stroke-width:2px}</style></defs><path class="cls-1" d="M17 47.72H7.38V21h33.14v26.72H24.44M45.92 47.72h-5.4V34.9h17.1v12.82h-4.23M57.62 34.9l-6.41-8.56H40.52"/><circle class="cls-1" cx="20.74" cy="48.26" r="3.74"/><path class="cls-1" d="M45.92 47.73a3.82 3.82 0 1 1 0 .37v-.37"/></svg>
+                      {% endcase %}
+                      <span>{{ settings.sales_point_2 }}</span>
+                    </span>
+                  </li>
+                {% endif %}
+                {% if settings.sales_point_3 != blank %}
+                  <li class="sales_point">
+                    <span class="icon-and-text">
+                      {% case settings.sales_point_3_icon %}
+                        {% when 'checkmark' %} <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-circle-checkmark" viewBox="0 0 64 64"><defs><style>.cls-1{fill:none;stroke:#000;stroke-width:2px}</style></defs><path class="cls-1" d="M52.68 24.48A22 22 0 1 1 47 15.93M21 32l8.5 8.5L57 13"/></svg>
+                        {% when 'globe' %} <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-globe" viewBox="0 0 64 64"><defs><style>.cls-1{fill:none;stroke:#000;stroke-width:2px}</style></defs><circle class="cls-1" cx="33" cy="32" r="22"/><path class="cls-1" d="M14 21h38M11 32h44M14 43h38M33 10c-12 8-12 37 0 44M33 10c12 8 12 37 0 44"/></svg>
+                        {% when 'leaf' %} <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-leaf" viewBox="0 0 64 64"><defs><style>.cls-1{fill:none;stroke:#000;stroke-miterlimit:10;stroke-width:2px}</style></defs><path class="cls-1" d="M51 12L13 50M35 13v15h16"/><path class="cls-1" d="M52 11c6 24-16.72 47.29-33 32C7 22 29 10 52 11z"/></svg>
+                        {% when 'package' %} <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-package" viewBox="0 0 64 64"><defs><style>.cls-1{fill:none;stroke:#000;stroke-width:2px}</style></defs><path class="cls-1" d="M32 56L9.05 42.88V22.12L32 9l22.95 13.12v20.76L32 56z"/><path class="cls-1" d="M32 56V35.23l22.95-13.11M32 35.23L9.05 22.12M42.13 14.79L20.52 28.67v8.75"/></svg>
+                        {% when 'lock' %} <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-lock" viewBox="0 0 64 64"><defs><style>.cls-1{fill:none;stroke:#000;stroke-width:2px}</style></defs><path id="svg_2" data-name="svg 2" class="cls-1" d="M20.48 24v-3c0-6.6 5.52-11 11.76-11C39 10 44 15.13 44 21v3"/><path id="svg_4" data-name="svg 4" class="cls-1" d="M11.62 24h41.25v29.77H11.62z"/><path class="cls-1" d="M32.24 37v7"/><circle class="cls-1" cx="32.24" cy="35.5" r="1.5"/></svg>
+                        {% when 'truck' %} <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-truck" viewBox="0 0 64 64"><defs><style>.cls-1{fill:none;stroke:#000;stroke-miterlimit:10;stroke-width:2px}</style></defs><path class="cls-1" d="M17 47.72H7.38V21h33.14v26.72H24.44M45.92 47.72h-5.4V34.9h17.1v12.82h-4.23M57.62 34.9l-6.41-8.56H40.52"/><circle class="cls-1" cx="20.74" cy="48.26" r="3.74"/><path class="cls-1" d="M45.92 47.73a3.82 3.82 0 1 1 0 .37v-.37"/></svg>
+                      {% endcase %}
+                      <span>{{ settings.sales_point_3 }}</span>
+                    </span>
+                  </li>
+                {% endif %}
+                {% if settings.sales_point_4 != blank %}
+                  <li class="sales_point">
+                    <span class="icon-and-text">
+                      {% case settings.sales_point_4_icon %}
+                        {% when 'checkmark' %} <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-circle-checkmark" viewBox="0 0 64 64"><defs><style>.cls-1{fill:none;stroke:#000;stroke-width:2px}</style></defs><path class="cls-1" d="M52.68 24.48A22 22 0 1 1 47 15.93M21 32l8.5 8.5L57 13"/></svg>
+                        {% when 'globe' %} <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-globe" viewBox="0 0 64 64"><defs><style>.cls-1{fill:none;stroke:#000;stroke-width:2px}</style></defs><circle class="cls-1" cx="33" cy="32" r="22"/><path class="cls-1" d="M14 21h38M11 32h44M14 43h38M33 10c-12 8-12 37 0 44M33 10c12 8 12 37 0 44"/></svg>
+                        {% when 'leaf' %} <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-leaf" viewBox="0 0 64 64"><defs><style>.cls-1{fill:none;stroke:#000;stroke-miterlimit:10;stroke-width:2px}</style></defs><path class="cls-1" d="M51 12L13 50M35 13v15h16"/><path class="cls-1" d="M52 11c6 24-16.72 47.29-33 32C7 22 29 10 52 11z"/></svg>
+                        {% when 'package' %} <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-package" viewBox="0 0 64 64"><defs><style>.cls-1{fill:none;stroke:#000;stroke-width:2px}</style></defs><path class="cls-1" d="M32 56L9.05 42.88V22.12L32 9l22.95 13.12v20.76L32 56z"/><path class="cls-1" d="M32 56V35.23l22.95-13.11M32 35.23L9.05 22.12M42.13 14.79L20.52 28.67v8.75"/></svg>
+                        {% when 'lock' %} <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-lock" viewBox="0 0 64 64"><defs><style>.cls-1{fill:none;stroke:#000;stroke-width:2px}</style></defs><path id="svg_2" data-name="svg 2" class="cls-1" d="M20.48 24v-3c0-6.6 5.52-11 11.76-11C39 10 44 15.13 44 21v3"/><path id="svg_4" data-name="svg 4" class="cls-1" d="M11.62 24h41.25v29.77H11.62z"/><path class="cls-1" d="M32.24 37v7"/><circle class="cls-1" cx="32.24" cy="35.5" r="1.5"/></svg>
+                        {% when 'truck' %} <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-truck" viewBox="0 0 64 64"><defs><style>.cls-1{fill:none;stroke:#000;stroke-miterlimit:10;stroke-width:2px}</style></defs><path class="cls-1" d="M17 47.72H7.38V21h33.14v26.72H24.44M45.92 47.72h-5.4V34.9h17.1v12.82h-4.23M57.62 34.9l-6.41-8.56H40.52"/><circle class="cls-1" cx="20.74" cy="48.26" r="3.74"/><path class="cls-1" d="M45.92 47.73a3.82 3.82 0 1 1 0 .37v-.37"/></svg>
+                      {% endcase %}
+                      <span>{{ settings.sales_point_4 }}</span>
+                    </span>
+                  </li>
+                {% endif %}
+              </ul>
+            {% endif %}
+          {%- endunless -%}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-width page-width--flush-small">
+    {%- render 'product-additional-content', product: product, section_id: section.id -%}
+  </div>
+</div>
+
+{%- if section.settings.divider -%}</div>{%- endif -%}
+
+{% schema %}
+  {
+    "name": "Featured product",
+    "class": "index-section",
+    "settings": [
+      {
+        "type": "product",
+        "id": "featured_product",
+        "label": "Product"
+      },
+      {
+        "type": "checkbox",
+        "id": "divider",
+        "label": "Show section divider",
+        "default": false
+      },
+      {
+        "type": "header",
+        "content": "Media"
+      },
+      {
+        "type": "paragraph",
+        "content": "Learn more about [media types](https://help.shopify.com/en/manual/products/product-media)"
+      },
+      {
+        "type": "select",
+        "id": "product_image_size",
+        "label": "Force image size",
+        "default": "square",
+        "options": [
+          {
+            "value": "natural",
+            "label": "Natural"
+          },
+          {
+            "value": "square",
+            "label": "Square (1:1)"
+          },
+          {
+            "value": "landscape",
+            "label": "Landscape (4:3)"
+          },
+          {
+            "value": "portrait",
+            "label": "Portrait (2:3)"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "thumbnail_position",
+        "label": "Thumbnail position",
+        "default": "beside",
+        "options": [
+          {
+            "value": "beside",
+            "label": "Next to media"
+          },
+          {
+            "value": "below",
+            "label": "Below media"
+          }
+        ]
+      },
+      {
+        "type": "checkbox",
+        "id": "thumbnail_arrows",
+        "label": "Show thumbnail arrows"
+      },
+      {
+        "type": "select",
+        "id": "mobile_layout",
+        "label": "Mobile layout",
+        "default": "partial",
+        "options": [
+          {
+            "value": "partial",
+            "label": "75% width"
+          },
+          {
+            "value": "full",
+            "label": "Full width"
+          }
+        ]
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_video_looping",
+        "label": "Enable video looping",
+        "default": true
+      },
+      {
+        "type": "select",
+        "id": "product_video_style",
+        "label": "Video style",
+        "default": "muted",
+        "options": [
+          {
+            "value": "muted",
+            "label": "Video without sound"
+          },
+          {
+            "value": "unmuted",
+            "label": "Video with sound"
+          }
+        ],
+        "info": "Video with sound will not autoplay"
+      }
+    ],
+    "presets": [
+      {
+        "name": "Featured product",
+        "category": "Product"
+      }
+    ]
+  }
+{% endschema %}

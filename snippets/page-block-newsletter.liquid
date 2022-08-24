@@ -1,0 +1,19 @@
+<div class="index-section newsletter-{{ block.id }} color-scheme-{{ block.settings.color_scheme }}">
+  {%- if block.settings.color_scheme != 'none' -%}
+    {%- render 'color-scheme-texture', color_scheme: block.settings.color_scheme -%}
+  {%- endif -%}
+  <div class="page-width page-width--narrow text-center">
+    {%- if block.settings.title != blank -%}
+      <p class="h2">{{ block.settings.title | escape }}</p>
+    {%- endif -%}
+    {%- if block.settings.text != blank -%}
+      <div class="rte rte--large">
+        <div class="enlarge-text">
+          {{ block.settings.text }}
+        </div>
+      </div>
+    {%- endif -%}
+
+    {%- render 'newsletter-form', section_id: block.id, snippet_context: 'page-section' -%}
+  </div>
+</div>

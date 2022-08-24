@@ -1,0 +1,8 @@
+<button type="button" class="collapsible-trigger collapsible-trigger-btn collapsible--auto-height{% unless collapsed_state %} is-open{% endunless %} tag-list__header" data-controls="{{ location }}-{{ index }}">
+  <span class="collapsible-trigger__layout collapsible-trigger__layout--inline">
+    <span>
+      {{ title }}
+    </span>
+    {%- render 'collapsible-icons' -%}
+  </span>
+</button>

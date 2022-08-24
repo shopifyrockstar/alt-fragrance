@@ -1,0 +1,141 @@
+{% schema %}
+  {
+    "name": "Product stories",
+	"class": "product-template__container page-width",
+    "settings": [
+		{   "type": "checkbox",
+			"id": "enable-product-stories",
+			"label": "Enable product stories",
+			"info": "Turn product stories on or off"
+		},
+        {
+          "type": "radio",
+          "id": "h-align",
+          "label": "Horizontal alignment",
+          "options": [
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "center",
+              "label": "Center"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ],
+          "default": "left"
+        },
+        {
+          "type": "range",
+          "id": "story-size",
+          "min": 1,
+          "max": 5,
+          "step": 1,
+          "label": "Story size",
+          "default": 3
+        },
+        {
+          "type": "color",
+          "id": "accent-color",
+          "label": "Accent color",
+          "default": "#a7a7a7"
+        },
+		{
+          "type": "text",
+          "id": "story-player-label",
+          "label": "Product stories label text",
+          "default": "See it in action"
+        },
+		{   "type": "checkbox",
+			"id": "story-player-label-visible",
+			"label": "Display product stories label",
+			"info": "Disable this to hide the label and only show the media thumbnails",
+			"default": true
+		},
+       	{ "type": "header",
+		  "content": "Change Product Stories Placement"
+		},
+		{ "type": "paragraph",
+		  "content": "Want product stories to appear in a different spot on the page? Edit your theme's product.liquid template file (Themes > Current theme > Actions > Edit code) and change where the product-stories.liquid section is imported. [Go to your store's theme settings](/admin/themes)"
+		}
+	]
+  }
+{% endschema %}
+
+{% style %}
+    .hidden {
+        display: none;
+    }
+{% endstyle %}
+
+{% if section.settings.h-align == "left" %}
+{% assign justify = "flex-start" %}
+{% elsif section.settings.h-align == "center" %}
+{% assign justify = "center" %}
+{% else %}
+{% assign justify = "flex-end" %}
+{% endif %}
+
+{% assign story-size = section.settings.story-size | times: 12 | plus: 24 %}
+
+{% if section.settings.enable-product-stories
+    and product.metafields.trend
+    and product.metafields.trend.product_stories.value
+    and product.metafields.trend.product_stories.value.size > 0 %}
+
+<div class="product-stories hidden"
+     style="--justify: {{justify}};
+            --text-align: {{section.settings.h-align}};
+            --accent-color: {{section.settings.accent-color}};
+            --story-size: {{story-size}}px"
+     >
+    <script type="application/json" class="trend-product-json">
+        {{ product | json }}
+    </script>
+    <div class="product-story-wrapper">
+        {% if section.settings.story-player-label-visible %}
+        <h1 class="test-class">
+            {{ section.settings.story-player-label }}
+            <div class="product-story-caret"></div>
+        </h1>
+        {% endif %}
+        <div class="product-story-container">
+            {% for story in product.metafields.trend.product_stories.value %}
+            <div class="product-story-thumb-accent">
+                <div class="product-story-thumb" tabindex="0" data-story-item-id="{{story.id}}"
+                    data-media-id="{{story.mediaId}}">
+                    <img src="{{ story.mediaThumbnailUrl }}" height="{{ story-size }}" width="{{ story-size }}" />
+                </div>
+            </div> {% endfor %}
+        </div>
+    </div>
+</div>
+{% elsif request.design_mode and section.settings.enable-product-stories %}
+<div class="product-stories hidden"
+     style="--justify: {{justify}};
+            --text-align: {{section.settings.h-align}};
+            --accent-color: {{section.settings.accent-color}};
+            --story-size: {{story-size}}px"
+     >
+  <div class="product-story-wrapper">
+    {% if section.settings.story-player-label-visible %}
+      <h1 class="test-class">
+        {{ section.settings.story-player-label }}
+        <div class="product-story-caret"></div>
+      </h1>
+    {% endif %}
+    <div class="product-story-container">
+    {% for i in (1..5) %}
+      <div class="product-story-thumb-accent">
+          <div class="product-story-thumb" tabindex="0">
+              <img src="{{ "no-image" | asset_img_url }}" height="{{ story-size }}" width="{{ story-size }}" />
+          </div>
+      </div>
+    {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}

@@ -1,0 +1,72 @@
+{%- liquid
+  assign collection = collections[block.settings.collection]
+  assign product_limit = block.settings.count | plus: 1
+  if block.settings.mobile_scrollable
+    assign product_limit = block.settings.count
+  endif
+-%}
+
+<div class="index-section">
+  <div
+    id="CollectionSection-{{ block.id }}"
+    data-section-id="{{ block.id }}"
+    data-section-type="collection-template">
+    {%- if block.settings.title != blank -%}
+      <div class="page-width">
+        <div class="section-header{% if block.settings.view_all %} section-header--with-link{% endif %}">
+          <h2 class="section-header__title">
+            {{ block.settings.title }}
+          </h2>
+          {%- if block.settings.view_all -%}
+            <a href="{{ collections[block.settings.collection].url }}" class="section-header__link">{{ 'collections.general.all_of_collection' | t }}</a>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+
+    <div class="page-width{% if block.settings.mobile_scrollable %} page-width--flush-small{% endif %}">
+      <div class="new-grid{% if block.settings.mobile_scrollable %} scrollable-grid--small{% endif %}" data-view="xsmall">
+        {%- if block.settings.collection == blank or collections[block.settings.collection].empty? or collections[block.settings.collection].products_count == 0 -%}
+
+          {%- liquid
+            for i in (1..product_limit)
+              assign item_classes = ''
+              unless block.settings.mobile_scrollable
+                if forloop.index > block.settings.count
+                  assign item_classes = 'hide'
+                  assign mod = forloop.index | modulo: 2
+                  if mod == 0
+                    assign item_classes = 'medium-up--hide'
+                  endif
+                endif
+              endunless
+              render 'onboarding-product-grid-item', i: i, classes: item_classes
+            endfor
+          -%}
+
+        {%- else -%}
+          {%- liquid
+            for product in collections[block.settings.collection].products limit: product_limit
+              assign item_classes = ''
+              unless block.settings.mobile_scrollable
+                if forloop.index > block.settings.count
+                  assign item_classes = 'hide'
+                  assign mod = forloop.index | modulo: 2
+                  if mod == 0
+                    assign item_classes = 'medium-up--hide'
+                  endif
+                endif
+              endunless
+
+              render 'product-grid-item', product: product, collection: collection, classes: item_classes
+
+              if settings.quick_shop_enable
+                render 'quick-shop-modal', product: product
+              endif
+            endfor
+          -%}
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</div>

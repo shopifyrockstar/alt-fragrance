@@ -1,0 +1,117 @@
+{%- liquid
+  assign recommend_products = true
+
+  if recommendations.products and recommendations.products_count > 0
+    assign related_collection = recommendations
+  endif
+
+  for tag in product.tags
+    if tag contains '_related'
+      assign include_collection_handle = tag | split: '_' | last
+      assign include_collection = collections[include_collection_handle]
+      if include_collection != empty and include_collection.products_count > 0
+        assign related_collection = include_collection
+        assign recommend_products = false
+        break
+      endif
+    endif
+  endfor
+
+  assign number_of_products_to_fetch = 6
+-%}
+
+{%- if section.settings.show_product_recommendations -%}
+  <div
+    id="Recommendations-{{ product.id }}"
+    data-section-id="{{ product.id }}"
+    data-section-type="product-recommendations"
+    data-enable="{{ recommend_products }}"
+    data-product-id="{{ product.id }}"
+    data-url="{{ routes.product_recommendations_url }}"
+    data-limit="{{ number_of_products_to_fetch }}">
+
+    <div
+      data-section-id="{{ product.id }}"
+      data-subsection
+      data-section-type="collection-template"
+      class="index-section">
+      <div class="page-width">
+        <header class="section-header">
+          <div class="h3 section-header__title">
+            {{ section.settings.product_recommendations_heading }}
+          </div>
+        </header>
+      </div>
+
+      <div class="page-width page-width--flush-small">
+        {%- if recommend_products -%}
+          <div class="product-recommendations-placeholder">
+            {% comment %}
+              This content is visually hidden and replaced when recommended
+              products show up
+            {% endcomment %}
+            <div class="new-grid product-grid scrollable-grid--small visually-invisible" aria-hidden="true" data-view="scrollable">
+              {%- render 'product-grid-item', product: product, no_actions: true -%}
+            </div>
+          </div>
+        {%- endif -%}
+        {%- if related_collection.products_count > 1 -%}
+          <div class="product-recommendations">
+            <div class="new-grid product-grid scrollable-grid--small" data-view="scrollable">
+              {%- liquid
+                assign current_product = product
+                assign current_product_found = false
+                assign related_count = 0
+              -%}
+              {%- for product in related_collection.products limit: number_of_products_to_fetch -%}
+                {%- if product.handle == current_product.handle -%}
+                  {%- assign current_product_found = true -%}
+                {%- else -%}
+                  {%- assign related_count = related_count | plus: 1 -%}
+                  {%- unless related_count > number_of_products -%}
+                    {%- if forloop.last and current_product_found -%}
+                      {%- render 'product-grid-item', product: product -%}
+                    {%- else -%}
+                      {%- render 'product-grid-item', product: product -%}
+                    {%- endif -%}
+                  {%- endunless -%}
+                {%- endif -%}
+              {%- endfor -%}
+            </div>
+
+            {%- liquid
+              if settings.quick_shop_enable
+                for product in related_collection.products limit: number_of_products_to_fetch
+                  if product.handle != current_product.handle
+                    render 'quick-shop-modal', product: product
+                  endif
+                endfor
+              endif
+            -%}
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+  {
+    "name": "Product recommendations",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "show_product_recommendations",
+        "label": "Show dynamic recommendations",
+        "info": "Dynamic recommendations change and improve with time. [Learn more](https://help.shopify.com/en/themes/development/recommended-products)",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "product_recommendations_heading",
+        "label": "Heading",
+        "default": "You may also like"
+      }
+    ]
+  }
+{% endschema %}

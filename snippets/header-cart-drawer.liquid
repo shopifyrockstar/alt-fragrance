@@ -1,0 +1,160 @@
+<div class="shipping-wrapper">
+  
+  <div class="cart-announcement">
+    
+    <div class="top-wrapper">
+      
+      {% comment %}
+      <p class="spend-more hidden">
+        <span class="remaining"></span> away from Free U.S Shipping
+      </p>
+      {% endcomment %}
+      <p class="spend-more hidden item-wrapper" data-value="{{ settings.free_shipping_value }}">
+        <span class="remaining"></span> away from Free U.S Shipping
+      </p>
+	  
+      {% comment %}
+      <p class="first-offer red-text hidden" data-value="{{ settings.free_shipping_value }}">
+        You Get <b>Free U.S  Shipping</b>        
+      </p>
+      {% endcomment %}
+      <div class="first-offer red-text hidden item-wrapper" data-value="{{ settings.free_shipping_value }}">
+        {{ settings.free_shipping_copy }}
+      </div>
+      
+      {% comment %}
+      <p class="sec-offer red-text hidden" data-value="{{ settings.first_tier_value }}">
+       	You Get <b>Free U.S  Shipping + 10% off. Enter code ‘10OFF’ at checkout.</b>        
+      </p>
+      {% endcomment %}
+      <div class="sec-offer red-text hidden item-wrapper" data-value="{{ settings.first_tier_value }}" data-off="{{ settings.first_tier_off }}">
+        {{ settings.first_tier_copy }}
+      </div>
+      
+      {% comment %}
+      <p class="third-offer red-text hidden" data-value="{{ settings.second_tier_value }}">
+        You Get <b>Free U.S Shipping + 15% off. Enter code ‘15OFF’ at checkout</b>
+        {{ settings.second_tier_copy | escape }}
+      </p>
+      {% endcomment %}
+      <div class="third-offer red-text hidden item-wrapper" data-value="{{ settings.second_tier_value }}" data-off="{{ settings.second_tier_off }}">        
+        {{ settings.second_tier_copy }}
+      </div>      
+
+    </div>
+  
+    <div class="myProgress hidden">
+      <div class="myBar"></div>
+    </div>  
+    
+    <div class="bottom-wrapper">
+      <p class="first-offer hidden">
+        <b> Spend another <span class="first-offer-remaining"></span> to receive {{ settings.first_tier_off }} off</b>
+      </p>
+      <p class="sec-offer hidden">
+        <b> Spend another <span class="sec-offer-remaining"></span> to receive {{ settings.second_tier_off }} off</b>
+      </p>
+      <p class="third-offer hidden">        
+      </p>
+    </div>
+
+  </div>
+
+</div>
+{% if settings.ajax_announcement_copy != blank %}
+<div class="ajax-announcement-wrapper hidden">
+  <p>{{ settings.ajax_announcement_copy }}</p>
+</div>
+{% endif %}
+<form action="{{ routes.cart_url }}" method="post" novalidate data-location="header" class="cart__drawer-form">
+  <div class="cart__scrollable">
+    <div data-products></div>
+    {%- render 'cart-recommendations', location: 'drawer' -%}
+
+    {% if settings.cart_notes_enable %}
+      <div class="cart__item-row">
+        <label for="CartHeaderNote" class="add-note">
+          {{ 'cart.general.note' | t }}
+          <span class="note-icon note-icon--open" aria-hidden="true">
+            <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-pencil" viewBox="0 0 64 64"><defs><style>.cls-1,.cls-2{fill:none;stroke:#000;stroke-width:2px}.cls-1{stroke-miterlimit:10}</style></defs><path class="cls-1" d="M52 33.96V58H8V14h23.7"/><path class="cls-1" d="M18 47l13-5 24-24-8-8-24 24-5 13zM23 34l8 8"/><path id="svg_2" data-name="svg 2" class="cls-2" d="M47 10l1-1a5.44 5.44 0 0 1 7.82.18A5.52 5.52 0 0 1 56 17l-1 1"/></svg>
+          </span>
+          <span class="note-icon note-icon--close">
+            <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-close" viewBox="0 0 64 64"><defs><style>.cls-1{fill:none;stroke:#000;stroke-miterlimit:10;stroke-width:2px}</style></defs><path class="cls-1" d="M19 17.61l27.12 27.13m0-27.13L19 44.74"/></svg>
+            <span class="icon__fallback-text">{{ 'general.accessibility.close' | t }}</span>
+          </span>
+        </label>
+        <textarea name="note" class="input-full cart__note hide" id="CartHeaderNote">{{ cart.note }}</textarea>
+      </div>
+    {% endif %}
+    
+    <div class="insurify-widget-container"></div>
+    <div class="cart__item-sub cart__item-row cart__item--subtotal">
+      <div>{{ 'cart.general.subtotal' | t }}</div>
+      <div data-subtotal>{{ cart.total_price | money }}</div>
+    </div>
+    
+    <div class="cart__item-sub custom-cart__item--discount" data-off_first="{{ settings.first_tier_discount_code }}" data-off_second="{{ settings.second_tier_discount_code }}">
+      <p class="">Discount: <span class="discount-wrapper hidden red-text"><span class="discount-amount"></span> OFF</span></p>
+      <p class="discounted-price"><span></span></p>
+    </div>
+    
+    <div class="cart__item-sub custom-cart__item--shipping">
+      <p>Shipping</p>
+      <p class="shipping-price"></p>
+    </div>
+    
+    {% comment %}
+    <div class="cart__item-sub custom-cart__item--total">
+      <p><strong>Total</strong></p>
+      <p class="total-price">{{ cart.total_price | money }}</p>
+    </div>
+    {% endcomment %}
+
+    <div data-discounts></div>
+    
+  </div>
+
+  <div class="cart__footer">
+    
+
+    {% if settings.cart_terms_conditions_enable %}
+      <div class="cart__item-row cart__terms">
+        <input type="checkbox" id="CartTermsHeader" class="cart__terms-checkbox">
+        <label for="CartTermsHeader" class="text-label">
+          <small>
+            {% if settings.cart_terms_conditions_link != blank %}
+              {{ 'cart.general.terms_html' | t: url: settings.cart_terms_conditions_link }}
+            {% else %}
+              {{ 'cart.general.terms' | t }}
+            {% endif %}
+          </small>
+        </label>
+      </div>
+    {% endif %}
+
+    <div class="cart__item-row cart__checkout-wrapper payment-buttons">
+      {% comment %}
+      <button type="submit" name="checkout" data-terms-required="{{ settings.cart_terms_conditions_enable }}" class="btn cart__checkout">
+        {{ 'cart.general.checkout' | t }}
+      </button>
+      {% endcomment %}
+      <div class="nvd-mini"></div>
+      <a class="btn" href="/checkout">{{ 'cart.general.checkout' | t }}</a>
+
+      {% if additional_checkout_buttons and settings.cart_additional_buttons %}
+        <div class="additional-checkout-buttons">{{ content_for_additional_checkout_buttons }}</div>
+      {% endif %}
+    </div>
+
+    {% comment %}
+    <div class="cart__item-row--footer text-center">
+      <small>{{ 'cart.general.shipping_at_checkout' | t }}</small>
+    </div>
+    {% endcomment %}
+  </div>
+</form>
+
+<div class="site-header__cart-empty">
+  <p>{{ 'cart.general.empty' | t }}</p>
+  <p>Click <a href="/collections/all">here</a> to continue shopping</p>
+</div>

@@ -1,0 +1,85 @@
+{% section 'product-template' %}
+{% section 'product-recommendations' %}
+{% section 'vendor-products' %}
+{% section 'recently-viewed' %}
+
+{% if collection %}
+  <div class="text-center page-content page-content--bottom">
+    <div class="page-width">
+      <a href="{% if collection.handle == 'frontpage' %}/{% else %}{{ collection.url }}{% endif %}" class="btn return-link">
+        <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon--wide icon-arrow-left" viewBox="0 0 50 15"><path d="M50 5.38v4.25H15V15L0 7.5 15 0v5.38z"/></svg> {{ 'products.general.collection_return' | t: collection: collection.title }}
+      </a>
+    </div>
+  </div>
+{% endif %}
+{% render 'judgeme_widgets', widget_type: 'judgeme_review_widget', concierge_install: true, product: product %}{{ 'option_selection.js' | shopify_asset_url | script_tag }}
+
+{% assign current_variant = product.selected_or_first_available_variant %}
+<div style="display: none" id="simple-bundles-options-html">
+  {% render 'simple-bundles-options', variant: current_variant, div_id: 'simple-bundles-options' %}
+  {% for variant in product.variants %}
+    {% assign div_id = 'simple-bundles-options-' | append: variant.id %}
+    {% render 'simple-bundles-options', variant: variant,  div_id: div_id  %}
+  {% endfor %}
+</div>
+
+<style>
+  #simple-bundles-options-container select {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+</style>
+
+<script>
+  function insertAfter(newNode, existingNode) {
+    existingNode.parentNode.insertBefore(newNode, existingNode.nextSibling);
+  }
+
+  function renderBundleVariantOptions(variantId) {
+    if (variantId) {
+      var simpleBundlesOptions = document.querySelector(
+        "#simple-bundles-options-html #simple-bundles-options-" + variantId
+      );
+    } else {
+      var simpleBundlesOptions = document.querySelector(
+        "#simple-bundles-options-html #simple-bundles-options"
+      );
+    }
+    var simpleBundlesOptionsContainer = document.getElementById(
+      "simple-bundles-options-container"
+    );
+
+    if (simpleBundlesOptions) {
+      if (simpleBundlesOptionsContainer) {
+        simpleBundlesOptionsContainer.innerHTML = "";
+        simpleBundlesOptionsContainer.appendChild(simpleBundlesOptions);
+      } else {
+        var cartFormHiddenInputs = document.querySelector(
+          'form[action="/cart/add"]:not([id^="product-form-installment"]) > input[type=hidden]'
+        );
+
+        var simpleBundlesOptionsContainerDOM = document.createElement("div");
+        simpleBundlesOptionsContainerDOM.id = "simple-bundles-options-container";
+        insertAfter(simpleBundlesOptionsContainerDOM, cartFormHiddenInputs);
+
+        document
+          .getElementById("simple-bundles-options-container")
+          .appendChild(simpleBundlesOptions);
+      }
+    }
+  }
+
+  (function () {
+    renderBundleVariantOptions(null);
+
+    // var selectBundleVariantCallback = function (variant, selector) {
+    //   renderBundleVariantOptions(variant.id);
+    // };
+
+    // new Shopify.OptionSelectors("product-select", {
+    //   product: {{ product | json }},
+    //   onVariantSelected: selectBundleVariantCallback,
+    //   enableHistoryState: true,
+    // });
+  })();
+</script>
